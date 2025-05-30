@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Binary Data Infinite Void</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: #000;
+            color: #0ff;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        #void {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+            white-space: pre;
+            font-size: 16px;
+            line-height: 1.2;
+            background: #000;
+            color: #0ff;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #controls {
+            position: fixed;
+            top: 10px; left: 10px;
+            z-index: 10;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #0ff;
+        }
+        input[type="file"] {
+            color: #0ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label>Upload Binary File:
+            <input type="file" id="fileInput" />
+        </label>
+        <button id="randomBtn">Random Binary Stream</button>
+    </div>
+    <div id="void"></div>
+    <script>
+        const voidDiv = document.getElementById('void');
+        const fileInput = document.getElementById('fileInput');
+        const randomBtn = document.getElementById('randomBtn');
+
+        function renderBinary(data) {
+            let binaryStr = '';
+            for (let i = 0; i < data.length; i++) {
+                binaryStr += data[i].toString(2).padStart(8, '0') + ' ';
+                if ((i + 1) % 32 === 0) binaryStr += '\n';
+            }
+            voidDiv.textContent = binaryStr;
+        }
+
+        fileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const arr = new Uint8Array(evt.target.result);
+                renderBinary(arr);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function generateInfiniteRandomBinary() {
+            let running = true;
+            voidDiv.textContent = '';
+            function appendRandom() {
+                if (!running) return;
+                let str = '';
+                for (let i = 0; i < 1024; i++) {
+                    str += Math.random() > 0.5 ? '1' : '0';
+                    if ((i + 1) % 32 === 0) str += '\n';
+                    else str += ' ';
+                }
+                voidDiv.textContent += str;
+                voidDiv.scrollTop = voidDiv.scrollHeight;
+                setTimeout(appendRandom, 50);
+            }
+            appendRandom();
+            randomBtn.onclick = () => { running = false; randomBtn.textContent = "Random Binary Stream"; randomBtn.onclick = startRandom; };
+            randomBtn.textContent = "Stop";
+        }
+
+        function startRandom() {
+            generateInfiniteRandomBinary();
+        }
+
+        randomBtn.onclick = startRandom;
+    </script>
+</body>
+</html>
